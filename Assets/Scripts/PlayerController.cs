@@ -6,9 +6,17 @@ public class PlayerController : MonoBehaviour
     public float forwardSpeed = 10f;     // İleri doğru koşma hızı
     public float laneDistance = 3f;      // Şeritler arası mesafe
     public float laneChangeSpeed = 10f;  // Şerit değiştirme yumuşaklığı (Lerp hızı)
-
+    [Header("Fizik Ayarları")]
+    public float jumpForce = 7f;  //zıplama
+    private bool isGrounded = true; //zemine temas
+    private Rigidbody rb;
+    private Vector3 originalScale;
     private int desiredLane = 1;         // 0: Sol, 1: Orta, 2: Sağ Oyuna ortadan başla
-
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        originalScale = transform.localScale;
+    }
     void Update()
     {
         // ileri hareket
@@ -26,15 +34,40 @@ public class PlayerController : MonoBehaviour
             desiredLane--;
             if (desiredLane == -1) desiredLane = 0; // En soldaysa sola gitmesin
         }
+        // Zıplama Mekaniği (Space)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
+        }
 
+        // Eğilme Mekaniği (Aşağı Ok veya S)
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        {
+            // Boyunu yarıya indr yere hızlı düşmesiaşagı kuvvet
+            transform.localScale = new Vector3(originalScale.x, originalScale.y / 2f, originalScale.z);
+            rb.AddForce(Vector3.down * jumpForce, ForceMode.Impulse);
+        }
+        if (Input.GetKeyUp(KeyCode.DownArrow) || Input.GetKeyUp(KeyCode.S))
+        {
+            // Tuşu bırakınca eski boyuna dön
+            transform.localScale = originalScale;
+        }
         // Hedef şeridin X pozisyonunu hesapla
         float targetX = 0f;
         if (desiredLane == 0) targetX = -laneDistance;
         else if (desiredLane == 1) targetX = 0f;
         else if (desiredLane == 2) targetX = laneDistance;
-
-        // Pürüzsüz geçiş Vector3.Lerp kullan
-        Vector3 targetPosition = new Vector3(targetX, transform.position.y, transform.position.z);
-        transform.position = Vector3.Lerp(transform.position, targetPosition, laneChangeSpeed * Time.deltaTime);
+        // Y eksenine (zıplamaya) müdahale etmemek için sadece X'i yumuşatıyoruz
+        float newX = Mathf.Lerp(transform.position.x, targetX, laneChangeSpeed * Time.deltaTime);
+        transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+    }
+    // Karakterin yere değip değmediğini kontrl et
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true;
+        }
     }
 }
