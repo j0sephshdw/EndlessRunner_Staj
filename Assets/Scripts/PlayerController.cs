@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Vector3 originalScale;
     private int desiredLane = 1;         // 0: Sol, 1: Orta, 2: Sağ Oyuna ortadan başla
+    private bool isGameOver = false; //oyun bitti mi?
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -19,6 +20,8 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
+        if (isGameOver)//oyun bittiyse dur
+            return;
         // ileri hareket
         transform.position += Vector3.forward * forwardSpeed * Time.deltaTime;
 
@@ -62,12 +65,18 @@ public class PlayerController : MonoBehaviour
         float newX = Mathf.Lerp(transform.position.x, targetX, laneChangeSpeed * Time.deltaTime);
         transform.position = new Vector3(newX, transform.position.y, transform.position.z);
     }
-    // Karakterin yere değip değmediğini kontrl et
+    // çarpışma fonk
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground"))//yere degme
         {
             isGrounded = true;
+        }
+        // Engele çarpma kontrolu
+        if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            isGameOver = true;
+            Debug.Log("GAME OVER! Bir engele çarptın.");
         }
     }
 }

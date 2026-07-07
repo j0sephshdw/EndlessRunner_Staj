@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TileObstacleSpawner : MonoBehaviour
@@ -5,7 +6,7 @@ public class TileObstacleSpawner : MonoBehaviour
     [Header("Engel Ayarları")]
     public GameObject obstaclePrefab; // engel
     public int maxObstaclesPerTile = 3; // max kac engel
-
+    private List<GameObject> spawnedObstacles = new List<GameObject>();
     void Start()
     {
         // Yol doğduğunda engel olustr
@@ -32,8 +33,19 @@ public class TileObstacleSpawner : MonoBehaviour
             
             GameObject obs = Instantiate(obstaclePrefab, spawnPosition, Quaternion.identity);
 
-            // engeli 15 saniye sonra sahneden sil (Memory Leak olmasınn)
-            Destroy(obs, 15f);
+            spawnedObstacles.Add(obs);
+        }
+    }
+    // Yol sahnede yok edildiğinde otomatik çalışan fonkson
+    private void OnDestroy()
+    {
+        // Yol silinmeden hemen önce kendi listesindeki tüm engellerisiler
+        foreach (GameObject obs in spawnedObstacles)
+        {
+            if (obs != null)
+            {
+                Destroy(obs);
+            }
         }
     }
 }
