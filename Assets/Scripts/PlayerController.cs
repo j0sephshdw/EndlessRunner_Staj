@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    private Animator anim;
     [Header("Hareket Ayarları")]
     public float forwardSpeed = 10f;     // İleri doğru koşma hızı
     public float laneDistance = 3f;      // Şeritler arası mesafe
@@ -13,13 +14,18 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 7f;  //zıplama
     private bool isGrounded = true; //zemine temas
     private Rigidbody rb;
-    private Vector3 originalScale;
+    private BoxCollider col;
+    private Vector3 originalColSize;
+    private Vector3 originalColCenter;
     private int desiredLane = 1;         // 0: Sol, 1: Orta, 2: Sağ Oyuna ortadan başla
     private bool isGameOver = false; //oyun bitti mi?
     void Start()
     {
+        anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
-        originalScale = transform.localScale;
+        col = GetComponent<BoxCollider>();
+        originalColSize = col.size;
+        originalColCenter = col.center;
     }
     void Update()
     {
@@ -45,24 +51,33 @@ public class PlayerController : MonoBehaviour
             desiredLane--;
             if (desiredLane == -1) desiredLane = 0; // En soldaysa sola gitmesin
         }
-        // Zıplama Mekaniği (Space)
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        // Zıplama Mekaniği (Space, Yukarı Ok veya W)
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && isGrounded)
         {
+            anim.SetTrigger("Jump");//animsyn
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false;
         }
 
         // Eğilme Mekaniği (Aşağı Ok veya S)
+
         if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
         {
-            // Boyunu yarıya indr yere hızlı düşmesiaşagı kuvvet
-            transform.localScale = new Vector3(originalScale.x, originalScale.y / 2f, originalScale.z);
+            anim.SetTrigger("Roll");
+
+            // Transformu değil, sadece çarpışma kutusunu (Collider) küçült
+            col.size = new Vector3(originalColSize.x, originalColSize.y / 2f, originalColSize.z);
+            // Kutunun havada kalmaması için merkez noktasını biraz aşağı kaydır
+            col.center = new Vector3(originalColCenter.x, originalColCenter.y - (originalColSize.y / 4f), originalColCenter.z);
+
             rb.AddForce(Vector3.down * jumpForce, ForceMode.Impulse);
         }
+
         if (Input.GetKeyUp(KeyCode.DownArrow) || Input.GetKeyUp(KeyCode.S))
         {
-            // Tuşu bırakınca eski boyuna dön
-            transform.localScale = originalScale;
+            // Tuşu bırakınca Collider'ı eski haline döndür
+            col.size = originalColSize;
+            col.center = originalColCenter;
         }
         // Hedef şeridin X pozisyonunu hesapla
         float targetX = 0f;
@@ -86,6 +101,7 @@ public class PlayerController : MonoBehaviour
         // Engele çarpma kontrolu
         if (collision.gameObject.CompareTag("Obstacle"))
         {
+            anim.SetTrigger("Die");
             isGameOver = true;
             Debug.Log("GAME OVER! Bir engele çarptın.");
             UIManager.instance.ShowGameOver();
