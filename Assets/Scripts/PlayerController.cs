@@ -64,6 +64,9 @@ public class PlayerController : MonoBehaviour
         // Y eksenine (zıplamaya) müdahale etmemek için sadece X'i yumuşatıyoruz
         float newX = Mathf.Lerp(transform.position.x, targetX, laneChangeSpeed * Time.deltaTime);
         transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+        // Karakterin Z pozisyonunu int yap skora gönder
+        int currentScore = Mathf.RoundToInt(transform.position.z);
+        UIManager.instance.UpdateScore(currentScore);
     }
     // çarpışma fonk
     private void OnCollisionEnter(Collision collision)
@@ -77,6 +80,7 @@ public class PlayerController : MonoBehaviour
         {
             isGameOver = true;
             Debug.Log("GAME OVER! Bir engele çarptın.");
+            UIManager.instance.ShowGameOver();
         }
     }
 }
