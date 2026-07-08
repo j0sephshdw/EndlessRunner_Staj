@@ -25,7 +25,7 @@ public class TileManager : MonoBehaviour
     {
         /* Karakter bulunduğu yolun yarısını geçtiğinde Z - 50, 
          önüne yeni yol koy ve en arkada kalanı sil.*/
-        if (playerTransform.position.z - 50 > (spawnZ - numberOfTiles * tileLength))
+        if (playerTransform.position.z - 80 > (spawnZ - numberOfTiles * tileLength))
         {
             SpawnTile();
             DeleteTile();

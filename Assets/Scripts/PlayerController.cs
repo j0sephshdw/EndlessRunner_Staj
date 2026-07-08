@@ -5,7 +5,10 @@ public class PlayerController : MonoBehaviour
     [Header("Hareket Ayarları")]
     public float forwardSpeed = 10f;     // İleri doğru koşma hızı
     public float laneDistance = 3f;      // Şeritler arası mesafe
-    public float laneChangeSpeed = 10f;  // Şerit değiştirme yumuşaklığı (Lerp hızı)
+    public float laneChangeSpeed = 10f;  // Şerit değiştirme hız
+    [Header("Zorluk Ayarları")]
+    public float speedIncreaseRate = 0.2f; // Saniyede hız ne kadar artck
+    public float maxSpeed = 30f;           // oyunun ulasacagı max hız
     [Header("Fizik Ayarları")]
     public float jumpForce = 7f;  //zıplama
     private bool isGrounded = true; //zemine temas
@@ -22,6 +25,11 @@ public class PlayerController : MonoBehaviour
     {
         if (isGameOver)//oyun bittiyse dur
             return;
+        // mevcut hız max hızdan küçükse hızı artır
+        if (forwardSpeed < maxSpeed)
+        {
+            forwardSpeed += speedIncreaseRate * Time.deltaTime;
+        }
         // ileri hareket
         transform.position += Vector3.forward * forwardSpeed * Time.deltaTime;
 
