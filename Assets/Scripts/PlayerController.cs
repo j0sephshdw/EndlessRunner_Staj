@@ -18,7 +18,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 originalColSize;
     private Vector3 originalColCenter;
     private int desiredLane = 1;         // 0: Sol, 1: Orta, 2: Sağ Oyuna ortadan başla
-    private bool isGameOver = false; //oyun bitti mi?
+    private bool isGameOver = false; //oyun bitti mi
+    private int collectedCoins = 0; // Toplanan altın sayısı
     void Start()
     {
         anim = GetComponentInChildren<Animator>();
@@ -105,6 +106,16 @@ public class PlayerController : MonoBehaviour
             isGameOver = true;
             Debug.Log("GAME OVER! Bir engele çarptın.");
             UIManager.instance.ShowGameOver();
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Coin"))
+        {
+            collectedCoins++; //  1 sltın artır
+            UIManager.instance.UpdateCoin(collectedCoins); // UIa haber ver
+
+            Destroy(other.gameObject); // Altınısil
         }
     }
 }

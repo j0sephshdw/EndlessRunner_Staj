@@ -6,7 +6,7 @@ public class UIManager : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;   // Skor yazısı
     public GameObject gameOverPanel;    // Game Over panel
-
+    public TextMeshProUGUI coinText; // altn
     //script'e her yerden kolayca ulaş
     public static UIManager instance;
 
@@ -32,5 +32,10 @@ public class UIManager : MonoBehaviour
     {
         // Mevcut sahneyi baştan yükle
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    // Altın sayacını güncelle
+    public void UpdateCoin(int coinCount)
+    {
+        coinText.text = "Altın: " + coinCount.ToString();
     }
 }
