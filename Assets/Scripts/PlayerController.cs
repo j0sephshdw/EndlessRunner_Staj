@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Can Ayarları")]
+    public int maxHealth = 3;
+    private int currentHealth;
+    private bool isInvincible = false; // Çarptıktan sonraki dokunulmazlık
     private Animator anim;
     [Header("Hareket Ayarları")]
     public float forwardSpeed = 10f;     // İleri doğru koşma hızı
@@ -22,6 +26,7 @@ public class PlayerController : MonoBehaviour
     private int collectedCoins = 0; // Toplanan altın sayısı
     void Start()
     {
+        currentHealth = maxHealth;
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
         col = GetComponent<BoxCollider>();
@@ -99,13 +104,30 @@ public class PlayerController : MonoBehaviour
         {
             isGrounded = true;
         }
-        // Engele çarpma kontrolu
-        if (collision.gameObject.CompareTag("Obstacle"))
+
+        // Engele çarpma kontrolü
+        if (collision.gameObject.CompareTag("Obstacle") && !isInvincible)
         {
-            anim.SetTrigger("Die");
-            isGameOver = true;
-            Debug.Log("GAME OVER! Bir engele çarptın.");
-            UIManager.instance.ShowGameOver();
+            currentHealth--; // Canı 1 azalt
+            UIManager.instance.UpdateHealth(currentHealth); // Arayüzden kalbi sil
+
+            if (currentHealth <= 0)
+            {
+                // Can bittiyse tamamen öl
+                anim.SetTrigger("Die");
+                isGameOver = true;
+                Debug.Log("GAME OVER! Canın bitti.");
+                UIManager.instance.ShowGameOver();
+            }
+            else
+            {
+                // Can varsa hasar animasyonu oynat ve engeli yok et
+                anim.SetTrigger("Hit");
+                Destroy(collision.gameObject);
+
+                // Kısa süreli dokunulmazlık başlat
+                StartCoroutine(InvincibilityRoutine());
+            }
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -117,5 +139,12 @@ public class PlayerController : MonoBehaviour
 
             Destroy(other.gameObject); // Altınısil
         }
+    }
+    // Hasar aldıktan sonra 1 saniyelik dokunulmazlık süresi
+    private System.Collections.IEnumerator InvincibilityRoutine()
+    {
+        isInvincible = true;
+        yield return new WaitForSeconds(1f); // 1 saniye bekle
+        isInvincible = false;
     }
 }
