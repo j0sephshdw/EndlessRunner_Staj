@@ -66,24 +66,9 @@ public class PlayerController : MonoBehaviour
         }
 
         // Eğilme Mekaniği (Aşağı Ok veya S)
-
         if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
         {
-            anim.SetTrigger("Roll");
-
-            // Transformu değil, sadece çarpışma kutusunu (Collider) küçült
-            col.size = new Vector3(originalColSize.x, originalColSize.y / 2f, originalColSize.z);
-            // Kutunun havada kalmaması için merkez noktasını biraz aşağı kaydır
-            col.center = new Vector3(originalColCenter.x, originalColCenter.y - (originalColSize.y / 4f), originalColCenter.z);
-
-            rb.AddForce(Vector3.down * jumpForce, ForceMode.Impulse);
-        }
-
-        if (Input.GetKeyUp(KeyCode.DownArrow) || Input.GetKeyUp(KeyCode.S))
-        {
-            // Tuşu bırakınca Collider'ı eski haline döndür
-            col.size = originalColSize;
-            col.center = originalColCenter;
+            StartCoroutine(RollRoutine());
         }
         // Hedef şeridin X pozisyonunu hesapla
         float targetX = 0f;
@@ -146,5 +131,28 @@ public class PlayerController : MonoBehaviour
         isInvincible = true;
         yield return new WaitForSeconds(1f); // 1 saniye bekle
         isInvincible = false;
+    }
+    // rollng ve Colliderı küçükltmeı
+    private System.Collections.IEnumerator RollRoutine()
+    {
+        anim.SetTrigger("Roll");
+
+        // Colliderı yarıya indir
+        col.size = new Vector3(originalColSize.x, originalColSize.y / 2f, originalColSize.z);
+        // Kutunun merkezini aşağı kaydır
+        col.center = new Vector3(originalColCenter.x, originalColCenter.y - (originalColSize.y / 4f), originalColCenter.z);
+
+        // Zıplarken eglrse hızlıc yere düş
+        if (!isGrounded)
+        {
+            rb.AddForce(Vector3.down * jumpForce, ForceMode.Impulse);
+        }
+
+        // Animasyonun bitmesni bekle
+        yield return new WaitForSeconds(1.15f);
+
+        // Süre dolnca Collidereski haline döndür
+        col.size = originalColSize;
+        col.center = originalColCenter;
     }
 }

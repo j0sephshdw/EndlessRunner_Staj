@@ -126,6 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TileObstacleSpawner
   obstaclePrefab: {fileID: 9042618957660160421, guid: 35f9f06942ec1964186d0c6d35a38d46, type: 3}
+  highObstaclePrefab: {fileID: 5378802252207596302, guid: f0a253997e5fbc14385ed0c81d97e602, type: 3}
   maxObstaclesPerTile: 3
   coinPrefab: {fileID: 4354007461628518698, guid: 33fe825fc337e204388560a199e6ed4b, type: 3}
   maxCoinsPerTile: 5
