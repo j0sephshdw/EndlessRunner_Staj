@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public float laneChangeSpeed = 10f;  // Şerit değiştirme hız
     [Header("Zorluk Ayarları")]
     public float speedIncreaseRate = 0.2f; // Saniyede hız ne kadar artck
-    public float maxSpeed = 30f;           // oyunun ulasacagı max hız
+    public float maxSpeed = 100f;           // oyunun ulasacagı max hız
     [Header("Fizik Ayarları")]
     public float jumpForce = 7f;  //zıplama
     private bool isGrounded = true; //zemine temas
