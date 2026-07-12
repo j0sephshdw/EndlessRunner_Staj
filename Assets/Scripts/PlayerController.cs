@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Fizik Ayarları")]
     public float jumpForce = 7f;
+    public float maxHeight = 5f; // Karakterin max yükseklik sınırı
     private bool isGrounded = true;
     private Rigidbody rb;
 
@@ -69,6 +70,7 @@ public class PlayerController : MonoBehaviour
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && isGrounded)
         {
             anim.SetTrigger("Jump");
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // Zıplama öncesi dikey hızı sıfırla
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false;
         }
@@ -99,14 +101,27 @@ public class PlayerController : MonoBehaviour
         // Yumuşatılmış sağ/sol hız hesaplaması
         float moveX = (targetX - transform.position.x) * laneChangeSpeed;
 
-        // Fizik motoru ile ileri koşma (Rampa tünellemesini ve içine girmeyi önler)
+        // Fizik motoru ile ileri koşma
         rb.linearVelocity = new Vector3(moveX, rb.linearVelocity.y, forwardSpeed);
 
         // --- RAMPADAN UÇMAYI ENGELLE
-        // Eğer karakter zıplamadıysa , onu aşağı cek
+        // Eğer karakter zıplamadıysa, onu aşağı çek
         if (isGrounded)
         {
             rb.AddForce(Vector3.down * 50f, ForceMode.Acceleration);
+        }
+
+        // YENİ: MAKSİMUM YÜKSEKLİK KONTROLÜ
+        if (transform.position.y > maxHeight)
+        {
+            // Karakteri zorla sınırda tut
+            transform.position = new Vector3(transform.position.x, maxHeight, transform.position.z);
+
+            // Yukarı doğru fırlama hızını sıfırla (hemen aşağı düşmeye başlamasını sağlar)
+            if (rb.linearVelocity.y > 0)
+            {
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            }
         }
     }
 
@@ -161,7 +176,7 @@ public class PlayerController : MonoBehaviour
         isRolling = true;
         anim.SetTrigger("Roll");
 
-        // Boyu 3'te 1'ine indir yüksek engelicin
+        // Boyu 3'te 1'ine indir yüksek engeller için
         float targetHeight = originalColHeight / 3f;
         col.height = targetHeight;
 

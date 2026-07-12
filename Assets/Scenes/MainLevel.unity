@@ -1092,6 +1092,7 @@ MonoBehaviour:
   speedIncreaseRate: 0.2
   maxSpeed: 30
   jumpForce: 7
+  maxHeight: 10
 --- !u!23 &1268537076
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1199,7 +1200,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1268537073}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: e5096eee2a2678043bef4ab90432863d, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
