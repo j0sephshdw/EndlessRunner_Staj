@@ -142,6 +142,8 @@ public class PlayerController : MonoBehaviour
             {
                 anim.SetTrigger("Die");
                 isGameOver = true;
+                int finalScore = Mathf.RoundToInt(transform.position.z);
+                SaveManager.Instance.SaveGame(finalScore, collectedCoins);
                 Debug.Log("GAME OVER! Canın bitti.");
                 UIManager.instance.ShowGameOver();
             }
