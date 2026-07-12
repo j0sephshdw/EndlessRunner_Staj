@@ -4,22 +4,29 @@ using UnityEngine;
 public class TileObstacleSpawner : MonoBehaviour
 {
     [Header("Engel Ayarları")]
-    public GameObject obstaclePrefab; // engel
-    public GameObject highObstaclePrefab;//yüksek engel
-    public int maxObstaclesPerTile = 3; // max kac engel
+    public GameObject obstaclePrefab;     // Normal engel
+    public GameObject highObstaclePrefab; // Yüksek engel 
+    public GameObject busBlockPrefab;     // Geçilemez Düz Otobüs
+    public GameObject busRampPrefab;      // Üstüne Çıkılabilen Rampalı Otobüs
+
+    [Tooltip("Oyunun en başında (0. metrelerde) çıkabilecek maksimum engel sayısı")]
+    public int baseMaxObstacles = 2;
+    [Tooltip("Oyunun ilerleyen safhalarında çıkabilecek en fazla engel limiti (Örn: En fazla 5)")]
+    public int absoluteMaxObstacles = 5;
 
     [Header("Altın Ayarları")]
     public GameObject coinPrefab;
-    public int maxCoinsPerTile = 5; // Bir yolda maksimum çıkacak altın sayısı
+    public int maxCoinsPerTile = 5;
 
     private List<GameObject> spawnedObstacles = new List<GameObject>();
 
     void Start()
     {
-        if (transform.position.z < 50f)//yolun cok basndaysa engel koyma
+        if (transform.position.z < 50f) // Yolun çok başındaysa engel koyma
         {
             return;
         }
+
         // Yol doğduğunda engel ve altın oluştur
         SpawnObstacles();
         SpawnCoins();
@@ -27,7 +34,16 @@ public class TileObstacleSpawner : MonoBehaviour
 
     void SpawnObstacles()
     {
-        int obstaclesToSpawn = Random.Range(1, maxObstaclesPerTile + 1);
+        // --- DİNAMİK ZORLUK AYARI ---
+        // Oyuncu her 200 metrede bir fazladan 1 engel potansiyeline sahip olsun
+        // Formül: Başlangıç engeli + (Mevcut Z Pozisyonu / 200)
+        int calculatedMaxObstacles = baseMaxObstacles + Mathf.FloorToInt(transform.position.z / 200f);
+
+        // Hesaplanan değerin belirli tavan sınırı aşma
+        int currentMaxObstacles = Mathf.Clamp(calculatedMaxObstacles, baseMaxObstacles, absoluteMaxObstacles);
+
+        // Bu yol parçası için 1 ile max engel sayısı arasıb da randomsec
+        int obstaclesToSpawn = Random.Range(1, currentMaxObstacles + 1);
 
         for (int i = 0; i < obstaclesToSpawn; i++)
         {
@@ -39,19 +55,17 @@ public class TileObstacleSpawner : MonoBehaviour
             bool validPosition = false;
             int attempts = 0;
 
-            // Güvenli bir yer bulana kadar maksimum 10 kez rastgele sayı dene
             while (!validPosition && attempts < 10)
             {
                 randomZ = Random.Range(-40f, 40f);
-                spawnPosition = new Vector3(randomLaneX, 1f, transform.position.z + randomZ);
+                spawnPosition = new Vector3(randomLaneX, 0f, transform.position.z + randomZ);
                 validPosition = true;
 
-                // Mevcut üretilmiş her şeyi kontrol et (Önceki engeller veya paralar)
                 foreach (GameObject existingObj in spawnedObstacles)
                 {
                     if (existingObj != null && Mathf.Abs(existingObj.transform.position.x - randomLaneX) < 0.5f)
                     {
-                        // Aynı şeritteyseler, aralarında en az 15 birim mesafe olmalı (Dip dibe engel olmasın)
+                        // Aynı şeritteyseler, aralarında en az 15 birim mesafe olmalı
                         if (Mathf.Abs(existingObj.transform.position.z - spawnPosition.z) < 15f)
                         {
                             validPosition = false;
@@ -62,25 +76,37 @@ public class TileObstacleSpawner : MonoBehaviour
                 attempts++;
             }
 
-            if (!validPosition) continue; // Güvenli yer bulunamadıysa bu engeli üretmeyi pas geç
+            if (!validPosition) continue;
 
-            GameObject selectedObstacle;
-            float spawnY;
+            GameObject selectedObstacle = null;
+            float spawnY = 0f;
 
-            if (Random.value > 0.5f)
+            int randomObstacleType = Random.Range(0, 4);
+
+            if (randomObstacleType == 0)
             {
                 selectedObstacle = obstaclePrefab;
                 spawnY = 1f;
             }
-            else
+            else if (randomObstacleType == 1)
             {
                 selectedObstacle = highObstaclePrefab;
                 spawnY = 2.6f;
             }
+            else if (randomObstacleType == 2)
+            {
+                selectedObstacle = busBlockPrefab;
+                spawnY = 0f;
+            }
+            else if (randomObstacleType == 3)
+            {
+                selectedObstacle = busRampPrefab;
+                spawnY = 0f;
+            }
 
             spawnPosition.y = spawnY;
 
-            GameObject obs = Instantiate(selectedObstacle, spawnPosition, Quaternion.identity);
+            GameObject obs = Instantiate(selectedObstacle, spawnPosition, selectedObstacle.transform.rotation);
             spawnedObstacles.Add(obs);
         }
     }
@@ -105,17 +131,17 @@ public class TileObstacleSpawner : MonoBehaviour
                 spawnPosition = new Vector3(randomLaneX, 1f, transform.position.z + randomZ);
                 validPosition = true;
 
-                // Paranın bir engelin içine veya çok yakınına doğmasını engelle
                 foreach (GameObject existingObj in spawnedObstacles)
+                {
                     if (existingObj != null && Mathf.Abs(existingObj.transform.position.x - randomLaneX) < 0.5f)
                     {
-                        // Bir engelin veya başka bir paranın en az 6 birim uzağında olmalı
                         if (Mathf.Abs(existingObj.transform.position.z - spawnPosition.z) < 6f)
                         {
                             validPosition = false;
                             break;
                         }
                     }
+                }
                 attempts++;
             }
 
@@ -126,10 +152,8 @@ public class TileObstacleSpawner : MonoBehaviour
         }
     }
 
-    // Yol sahnede yok edildiğinde otomatik çalış
     private void OnDestroy()
     {
-        // Yol silinmeden önce kendi listendeki tüm engelleri/altınları sil
         foreach (GameObject obs in spawnedObstacles)
         {
             if (obs != null)

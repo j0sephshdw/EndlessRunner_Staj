@@ -262,7 +262,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TileObstacleSpawner
   obstaclePrefab: {fileID: 9042618957660160421, guid: 35f9f06942ec1964186d0c6d35a38d46, type: 3}
   highObstaclePrefab: {fileID: 5378802252207596302, guid: f0a253997e5fbc14385ed0c81d97e602, type: 3}
-  maxObstaclesPerTile: 3
+  busBlockPrefab: {fileID: 7125525038979781613, guid: 9af2361d2a1d6754ead44b49916dacb2, type: 3}
+  busRampPrefab: {fileID: 1994739547304073379, guid: 207d24439f59fba448d78a4a50054ca0, type: 3}
+  baseMaxObstacles: 2
+  absoluteMaxObstacles: 5
   coinPrefab: {fileID: 4354007461628518698, guid: 33fe825fc337e204388560a199e6ed4b, type: 3}
   maxCoinsPerTile: 5
 --- !u!1001 &401305930382138459
