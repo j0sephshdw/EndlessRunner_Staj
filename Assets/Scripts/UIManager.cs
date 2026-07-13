@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,10 +15,14 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenuPanel;
     public TextMeshProUGUI highScoreText;
     public TextMeshProUGUI totalCoinsText;
+    public TMP_Dropdown graphicsDropdown; 
+
+    [Header("URP Grafik Ayarları")]
+    public RenderPipelineAsset[] qualityAssets;
 
     public static UIManager instance;
 
-    //oyunun menüden mi yoksa restart'tan mı başladığını aklında tutacak değişken
+    // oyunun menüden mi yoksa restart'tan mı başladığını aklında tutacak değişken
     public static bool isRestarting = false;
 
     private void Awake()
@@ -27,17 +32,29 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
+        // Kaydedilen grafik ayarını oku (Kayıt yoksa varsayılan olarak Unitygüncel kalitesi çek)
+        int defaultQuality = QualitySettings.GetQualityLevel();
+        int savedQuality = PlayerPrefs.GetInt("SelectedQuality", defaultQuality);
+
+        //  Dropdown arayüzündeki seçimi kayıttaki değere eşitle
+        if (graphicsDropdown != null)
+        {
+            graphicsDropdown.value = savedQuality;
+            graphicsDropdown.RefreshShownValue();
+        }
+
+        //  Grafik ayarını fiziksel olarak uygula
+        ApplyQualitySettings(savedQuality);
+
         if (isRestarting)
         {
-            // Eğer "Yeniden Başla" butonundan geliyorsak: Menüyü atla, direkt oyna
             Time.timeScale = 1f;
             mainMenuPanel.SetActive(false);
             gameOverPanel.SetActive(false);
-            isRestarting = false; // Bir sonraki tur için sıfırla
+            isRestarting = false;
         }
         else
         {
-            // Eğer oyunu ilk kez açıyorsak veya "Menüye Dön" dediysek: Menüyü göster
             Time.timeScale = 0f;
             mainMenuPanel.SetActive(true);
             gameOverPanel.SetActive(false);
@@ -46,30 +63,26 @@ public class UIManager : MonoBehaviour
         UpdateMainMenuUI();
     }
 
-    // "Başla" Butonu
     public void StartGame()
     {
         mainMenuPanel.SetActive(false);
         Time.timeScale = 1f;
     }
 
-    // "Yeniden Başla" Butonu
     public void RestartGame()
     {
-        isRestarting = true; // save Sahne açılınca menüyü atla
+        isRestarting = true;
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // YENİ: "Menüye Dön" Butonu
     public void GoToMenu()
     {
-        isRestarting = false; // save Sahne açılınca menüyü göster
+        isRestarting = false;
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // "Çıkış" Butonu
     public void QuitGame()
     {
         Debug.Log("Oyundan Çıkılıyor...");
@@ -96,6 +109,32 @@ public class UIManager : MonoBehaviour
         {
             if (highScoreText != null) highScoreText.text = "Rekor: " + SaveManager.Instance.playerData.highScore.ToString();
             if (totalCoinsText != null) totalCoinsText.text = "Kasadaki Altın: " + SaveManager.Instance.playerData.totalCoins.ToString();
+        }
+    }
+
+    // Arayüzden Dropdown tıklandığında çalışan fonksiyon
+    public void SetQuality(int qualityIndex)
+    {
+        // Seçimi hafızaya kaydet
+        PlayerPrefs.SetInt("SelectedQuality", qualityIndex);
+        PlayerPrefs.Save();
+
+        // Kaliteyi fiziksel olarak uygula
+        ApplyQualitySettings(qualityIndex);
+    }
+
+    // Grafik ayarlarını uygulayan yardımcı fonksiyon
+    private void ApplyQualitySettings(int qualityIndex)
+    {
+        if (qualityAssets != null && qualityIndex < qualityAssets.Length)
+        {
+            // Unity'nin kalite seviyesini değiştir (Low/Medium/High)
+            QualitySettings.SetQualityLevel(qualityIndex, true);
+
+            //  URP'nin aktif render motorunu kodla kesin olarak değiştir
+            GraphicsSettings.defaultRenderPipeline = qualityAssets[qualityIndex];
+
+            Debug.Log("Grafik Kalitesi Uygulandı: " + qualityAssets[qualityIndex].name);
         }
     }
 }
