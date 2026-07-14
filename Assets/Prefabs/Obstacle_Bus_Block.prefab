@@ -63,7 +63,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7764103791447727941}
   - component: {fileID: 6705008598667168892}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Obstacle_Bus_Block
   m_TagString: Ground
   m_Icon: {fileID: 0}

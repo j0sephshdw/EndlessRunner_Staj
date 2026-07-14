@@ -2567,6 +2567,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99a56054822da2749a34b1e5e296cd00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  rayDistance: 0.15
   maxHealth: 3
   forwardSpeed: 10
   laneDistance: 3
@@ -2574,7 +2578,12 @@ MonoBehaviour:
   speedIncreaseRate: 0.2
   maxSpeed: 30
   jumpForce: 7
+  extraGravityOnGround: 60
+  extraGravityFalling: 50
+  groundSlamForce: 25
   maxHeight: 10
+  jumpCooldown: 0.15
+  rollDuration: 0.65
 --- !u!23 &1268537076
 MeshRenderer:
   m_ObjectHideFlags: 0
