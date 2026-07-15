@@ -15,7 +15,7 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenuPanel;
     public TextMeshProUGUI highScoreText;
     public TextMeshProUGUI totalCoinsText;
-    public TMP_Dropdown graphicsDropdown; 
+    public TMP_Dropdown graphicsDropdown;
 
     [Header("URP Grafik Ayarları")]
     public RenderPipelineAsset[] qualityAssets;
@@ -52,6 +52,13 @@ public class UIManager : MonoBehaviour
             mainMenuPanel.SetActive(false);
             gameOverPanel.SetActive(false);
             isRestarting = false;
+
+            // Restart yapıldığında koşma ve sesini tetikle
+            PlayerController player = FindObjectOfType<PlayerController>();
+            if (player != null)
+            {
+                player.StartRunning();
+            }
         }
         else
         {
@@ -67,6 +74,13 @@ public class UIManager : MonoBehaviour
     {
         mainMenuPanel.SetActive(false);
         Time.timeScale = 1f;
+
+        //  Oyunu başlakoşma kilidini ve sesini aç
+        PlayerController player = FindObjectOfType<PlayerController>();
+        if (player != null)
+        {
+            player.StartRunning();
+        }
     }
 
     public void RestartGame()
