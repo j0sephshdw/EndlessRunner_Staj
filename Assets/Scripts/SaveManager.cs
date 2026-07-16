@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.IO;
+
 [System.Serializable]
 public class GameData
 {
@@ -21,7 +22,7 @@ public class SaveManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Dosya yolunu belirle
+            // Cihazdaki yerel dosya yolunu belirle
             saveFilePath = Path.Combine(Application.persistentDataPath, "player_save.json");
 
             // Oyun açılır açılmaz eski kayıtları yükle
@@ -33,7 +34,7 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-    // -SAVE
+    // --- OYUNU KAYDET ---
     public void SaveGame(int currentScore, int coinsCollectedThisRun)
     {
         // Rekor kontrolü yap
@@ -46,19 +47,19 @@ public class SaveManager : MonoBehaviour
         // Toplanan altınları kasaya ekle
         playerData.totalCoins += coinsCollectedThisRun;
 
-        // JSON Metnine Dönüştürme
+        // Objeyi JSON Metnine Dönüştür
         string jsonText = JsonUtility.ToJson(playerData, true);
 
-        // Bilgisayara/Telefona fiziksel dosya olarak yaz
+        // JSON verisini cihaza fiziksel dosya olarak yaz
         File.WriteAllText(saveFilePath, jsonText);
 
         Debug.Log("Oyun Verileri Güvenle Kaydedildi. Yol: " + saveFilePath);
     }
 
-    // LOAD
+    // --- KAYDI YÜKLE ---
     public void LoadGame()
     {
-        // Eğer cihazda daha önceden oluşturulmuş bir dosya varsa oku
+        // Eğer cihazda daha önceden oluşturulmuş bir save dosyası varsa oku
         if (File.Exists(saveFilePath))
         {
             string jsonText = File.ReadAllText(saveFilePath);
@@ -67,7 +68,7 @@ public class SaveManager : MonoBehaviour
         }
         else
         {
-            // İlk defa oynuyorsa sıfır tertemiz bir veri paketi oluştur
+            // İlk defa oynanıyorsa sıfır bir save nesnesi oluştur
             playerData = new GameData();
             Debug.Log("Kayıt dosyası bulunamadı, yeni profil oluşturuldu.");
         }

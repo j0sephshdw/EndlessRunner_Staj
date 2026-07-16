@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Slider için eklendi
+using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
@@ -23,8 +23,8 @@ public class UIManager : MonoBehaviour
     public GameObject settingsPanel;
     public TMP_Dropdown graphicsDropdown;
     public TMP_Dropdown resolutionDropdown;
-    public Slider musicSlider; // Müzik çubuğu referansı
-    public Slider sfxSlider;   // Ses efekti çubuğu referansı
+    public Slider musicSlider;
+    public Slider sfxSlider;
     public AudioMixer audioMixer;
 
     [Header("URP Grafik Ayarları")]
@@ -42,7 +42,7 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        // --- ÇÖZÜNÜRLÜK AYARLARINI YÜKLE ---
+        // --- ÇÖZÜNÜRLÜK SİSTEMİ ---
         resolutions = Screen.resolutions;
         if (resolutionDropdown != null)
         {
@@ -56,7 +56,7 @@ public class UIManager : MonoBehaviour
                 string option = resolutions[i].width + " x " + resolutions[i].height;
                 options.Add(option);
 
-                // Monitörün o anki doğal/kendi çözünürlüğünü bul
+                // Monitörün o anki doğal çözünürlüğünü tespit et
                 if (resolutions[i].width == Screen.currentResolution.width &&
                     resolutions[i].height == Screen.currentResolution.height)
                 {
@@ -70,39 +70,34 @@ public class UIManager : MonoBehaviour
             // Eğer daha önce hiç çözünürlük ayarı kaydedilmemişse
             if (!PlayerPrefs.HasKey("ResolutionIndex"))
             {
-                // monitörün kendi çözünürlüğünü  al
+                // İlk açılışta monitörün doğal çözünürlüğünü varsayılan yap
                 finalResolutionIndex = currentMonitorResolutionIndex;
 
-                // İlk ayar olarak bunu kaydet
                 PlayerPrefs.SetInt("ResolutionIndex", finalResolutionIndex);
                 PlayerPrefs.Save();
 
-                // Çözünürlüğü uygula
                 Resolution firstRes = resolutions[finalResolutionIndex];
                 Screen.SetResolution(firstRes.width, firstRes.height, Screen.fullScreen);
             }
             else
             {
-                // İlk açılış değilse, oyuncunun daha önce kaydettiği ayarı al
                 finalResolutionIndex = PlayerPrefs.GetInt("ResolutionIndex");
 
-                // GÜVENLİK: Eğer oyuncu oyunu başka bir monitöre taşıdıysa
+                // Index out of bounds hatasını önlemek için monitör değişimi kontrolü
                 if (finalResolutionIndex >= resolutions.Length)
                 {
                     finalResolutionIndex = currentMonitorResolutionIndex;
                 }
 
-                // Kayıtlı çözünürlüğü oyun başlarken uygula
                 Resolution savedRes = resolutions[finalResolutionIndex];
                 Screen.SetResolution(savedRes.width, savedRes.height, Screen.fullScreen);
             }
 
-            // Dropdown arayüzünü güncel değere getir
             resolutionDropdown.value = finalResolutionIndex;
             resolutionDropdown.RefreshShownValue();
         }
 
-        //  GRAFİK AYARLARINI YÜKLE
+        // --- GRAFİK AYARLARINI YÜKLE ---
         int defaultQuality = QualitySettings.GetQualityLevel();
         int savedQuality = PlayerPrefs.GetInt("SelectedQuality", defaultQuality);
 
@@ -113,23 +108,21 @@ public class UIManager : MonoBehaviour
         }
         ApplyQualitySettings(savedQuality);
 
-        // -  SES AYARLARINI YÜKLE 
-        // Hafızadaki ses verilerini al 
+        // --- SES AYARLARINI YÜKLE ---
         float savedMusic = PlayerPrefs.GetFloat("MusicVolume", 1f);
         float savedSFX = PlayerPrefs.GetFloat("SFXVolume", 1f);
 
-        // Arayüzdeki slider'ları kaydedilmiş değere getir
         if (musicSlider != null) musicSlider.value = savedMusic;
         if (sfxSlider != null) sfxSlider.value = savedSFX;
 
-        // Mixer'a doğrudan uygula Oyun açıldığında etki etsin
+        // Oyun açıldığında seslerin doğru seviyede başlaması için AudioMixer'a aktar
         if (audioMixer != null)
         {
             audioMixer.SetFloat("Music", Mathf.Log10(savedMusic) * 20);
             audioMixer.SetFloat("SFX", Mathf.Log10(savedSFX) * 20);
         }
 
-        // -OYUN BAŞLANGIÇ DURUMU RESTART / MENÜ
+        // --- OYUN BAŞLANGIÇ DURUMU (RESTART / MENÜ) ---
         if (isRestarting)
         {
             Time.timeScale = 1f;
@@ -152,7 +145,7 @@ public class UIManager : MonoBehaviour
         UpdateMainMenuUI();
     }
 
-    // -- TEMEL OYUN FONKSİYONLARI 
+    // --- TEMEL OYUN FONKSİYONLARI ---
 
     public void StartGame()
     {
@@ -206,7 +199,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // -AYARLAR MENÜSÜ AÇ/KAPA 
+    // --- AYARLAR MENÜSÜ ---
 
     public void OpenSettings()
     {
@@ -220,14 +213,13 @@ public class UIManager : MonoBehaviour
         mainMenuPanel.SetActive(true);
     }
 
-    // -- AYAR KAYIT FONKSİYONLARI 
+    // --- AYAR KAYIT FONKSİYONLARI ---
 
     public void SetResolution(int resolutionIndex)
     {
         Resolution resolution = resolutions[resolutionIndex];
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
 
-        // Değişen ayarı hafızaya kaydet
         PlayerPrefs.SetInt("ResolutionIndex", resolutionIndex);
         PlayerPrefs.Save();
     }
@@ -236,7 +228,6 @@ public class UIManager : MonoBehaviour
     {
         ApplyQualitySettings(qualityIndex);
 
-        // Değişen ayarı hafızaya kaydet
         PlayerPrefs.SetInt("SelectedQuality", qualityIndex);
         PlayerPrefs.Save();
     }
@@ -256,7 +247,6 @@ public class UIManager : MonoBehaviour
         if (audioMixer != null)
             audioMixer.SetFloat("Music", Mathf.Log10(volume) * 20);
 
-        // Değişen ayarı hafızaya kaydet
         PlayerPrefs.SetFloat("MusicVolume", volume);
         PlayerPrefs.Save();
     }
@@ -266,7 +256,6 @@ public class UIManager : MonoBehaviour
         if (audioMixer != null)
             audioMixer.SetFloat("SFX", Mathf.Log10(volume) * 20);
 
-        // Değişen ayarı hafızaya kaydet
         PlayerPrefs.SetFloat("SFXVolume", volume);
         PlayerPrefs.Save();
     }

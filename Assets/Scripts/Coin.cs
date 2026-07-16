@@ -6,10 +6,7 @@ public class Coin : MonoBehaviour
 
     void Update()
     {
-        // capraz don
+        // Altının kendi etrafında dönme animasyonu
         transform.Rotate(spinSpeed * Time.deltaTime, spinSpeed * Time.deltaTime, 0);
-
-        // Kod calısma kntrolu
-        Debug.Log("Altın betiği şu an sahnede çalışıyor!");
     }
 }
